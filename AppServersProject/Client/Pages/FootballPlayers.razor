@@ -1,0 +1,39 @@
+﻿@page "/footballplayers"
+@using AppServersProject.Shared
+@inject InterfacePlayerService PlayerService
+@inject NavigationManager NavigationManager 
+
+<h3>Football Players</h3>
+<RadzenDataGrid Data=@PlayerService.Players TItem="FootballPlayer"> 
+    <Columns>
+        <RadzenDataGridColumn TItem="FootballPlayer" Property="Name" Title="First Name"/>
+        <RadzenDataGridColumn TItem="FootballPlayer" Property="Surname" Title="Last Name"/>
+        <RadzenDataGridColumn TItem="FootballPlayer" Property="Position" Title="Position"/>
+        <RadzenDataGridColumn TItem="FootballPlayer" Property="Team.Name" Title="Team"/>
+        <RadzenDataGridColumn TItem="FootballPlayer" Property="Id" Width="60px">
+            <Template Context="data">
+                      <RadzenButton Size=ButtonSize.Small ButtonStyle="ButtonStyle.Light" Click="() => DisplayPlayer(data.Id)">Edit</RadzenButton>
+                  </Template>
+        </RadzenDataGridColumn>
+        
+    </Columns>
+
+</RadzenDataGrid>
+<br>
+<RadzenButton Size=ButtonSize.Medium ButtonStyle="ButtonStyle.Primary" Click="() => CreatePlayer()" Text="Default">Create Player</RadzenButton>
+    
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await PlayerService.GetPlayers();
+    }
+    void DisplayPlayer(int id)
+    {
+        NavigationManager.NavigateTo($"player/{id}");
+    }
+    void CreatePlayer()
+    {
+        NavigationManager.NavigateTo("/player");
+    }
+}

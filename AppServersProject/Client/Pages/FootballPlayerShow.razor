@@ -1,0 +1,88 @@
+﻿@page "/player"
+@page "/player/{id:int}"
+@inject InterfacePlayerService PlayerService
+@using AppServersProject.Shared;
+
+
+@if (Id == null)
+{
+    <h3> Add a new Football Player</h3>
+}
+else
+{
+    <h3>Edit @player.Name @player.Surname's attributes</h3> //player here...
+}
+
+<h3><br><b>@player.Name @player.Surname</b></h3>
+
+<EditForm Model="player" OnSubmit="FormSubmitHandler">
+    <div>
+        <label for="name">First Name</label>
+        <InputText id="name" @bind-Value="player.Name" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="surname">Surname</label>
+        <InputText id="surname" @bind-Value="player.Surname" class="form-control"></InputText>
+    </div>
+    <div>
+        <label for="position">Position</label>
+        <InputText id="position" @bind-Value="player.Position" class="form-control"></InputText>
+    </div>
+    <div>
+        <label>Team</label>
+        <InputSelect id="team" @bind-Value="player.TeamId" class="form-select">
+            @foreach (var Team in PlayerService.Teams)
+            {
+                <option value="@Team.Id">@Team.Name</option>
+            }
+              }
+        </InputSelect>
+    </div>
+    <button type="submit" class="btn btn primary">@textButton</button>
+    <button type="submit" class="btn btn primary" @onclick="DeletePlayer"> Delete Player</button>
+</EditForm>
+
+@code {
+    [Parameter] //Need to add the parameter here to get the /id on the page, see above injection
+    public int? Id { get; set; }
+
+    string textButton = string.Empty;
+
+    public FootballPlayer player = new FootballPlayer { Team = new Team()} ;
+
+    protected override async Task OnInitializedAsync()
+    {
+        textButton = Id == null ? "Save Player" : "Update Player";
+        await PlayerService.GetTeams();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id is null)
+        {
+            player.Team = PlayerService.Teams[0];
+            player.TeamId = player.Team.Id;
+        }
+        else
+        {
+            player = await PlayerService.GetPlayer((int)Id);
+        }
+    }
+
+    async Task FormSubmitHandler()
+    {
+        if (Id == null)
+        {
+            await PlayerService.CreatePlayer(player);
+        }
+        else
+        {
+            await PlayerService.ChangePlayer(player);
+        }
+    }
+    async Task DeletePlayer()
+    {
+        await PlayerService.DeletePlayer(player.Id);
+    }
+
+}
